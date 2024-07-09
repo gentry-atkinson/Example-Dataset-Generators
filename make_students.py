@@ -11,6 +11,21 @@ MONTHS = {'Jan':31, 'Feb':28, 'Mar':31,
           'Jul':31, 'Aug':31, 'Sep':30,
           'Oct':31, 'Nov':30, 'Dec':31}
 CUR_YEAR = 2024
+CLUBS = ["Investment Club", "Accounting Club", "AI Club",
+         "Alliance of Indigenous Scholars", "Alpha Psi Omega",
+         "Ballet Folklorico", "Board Game Club", 
+         "Black Student Alliance", "Cheer", "CS Club", 
+         "First Generation Scholars", "Forensic Association",
+         "Happy Feet", "Hilltop Productions", "i4",
+         "International Student Association", "March for Our Lives",
+         "Math Club", "MUSE", "Muslim Student Association", 
+         "Phi Delta Alpha", "Physics Club", "PRIDE", "Rowing Club",
+         "Bird Watching Club", "Women in STEM"]
+MAJORS = ["Accounting", "Mathematics", "Acting", "Nursing", "Finance",
+          "Pre-Dental", "Chemistry", "French", "Criminal Justice",
+          "Computer Science", "Pre-Medical", "Global Studies",
+          "Psychology", "History", "Spanish", "Social Work", "Digital Media",
+          "Theater Arts", "Kinesiology", "Marketing", "Video Game Dev."]
 
 with open("Example-Dataset-Generators/first_names.txt") as f:
     FIRST_NAMES = f.readlines()
@@ -49,7 +64,8 @@ if __name__ == '__main__':
             standings.append("Insuff. Major GPA")
         else:
             standings.append("Good Standing")
-    print(standings)
+    
+
 
 
 
