@@ -5,22 +5,54 @@
 import pandas as pd
 import random
 
-if __name__ == '__main__':
-    name_list = []
-    with open('Example-Dataset-Generators/raw_last_names.txt', 'r') as f:
-        contents = f.readlines()
-        for line in contents:
-            name_list.append(line.split('\t')[0].strip())
-    random.shuffle(name_list)
-    new_name_list = []
-    for i, name in enumerate(name_list):
-            new_name_list.append(name[0] + name[1:].lower())
-    print(f'Len of names is {len(name_list)}')
-    with open('Example-Dataset-Generators/last_names.txt', 'w+') as f:
-        f.write('\n'.join(new_name_list))
+NUM_STUDENTS = 50000
+MONTHS = {'Jan':31, 'Feb':28, 'Mar':31, 
+          'Apr':30, 'May':31, 'Jun':30, 
+          'Jul':31, 'Aug':31, 'Sep':30,
+          'Oct':31, 'Nov':30, 'Dec':31}
+CUR_YEAR = 2024
 
-    print("Generating a dataset of 10,000 random students")
-    table = pd.DataFrame()
+with open("Example-Dataset-Generators/first_names.txt") as f:
+    FIRST_NAMES = f.readlines()
+
+with open("Example-Dataset-Generators/last_names.txt") as f:
+    LAST_NAMES = f.readlines()
+
+if __name__ == '__main__':
+    print(f"Generating a dataset of {NUM_STUDENTS} random students")
+    print(f"Possible first names: {len(FIRST_NAMES)}\nPossible last names: {len(LAST_NAMES)}")
+
+    # Making fake names
+    names = []
+    for _ in range(NUM_STUDENTS):
+        names.append(random.choice(LAST_NAMES).strip() + ', ' + random.choice(FIRST_NAMES).strip())
+    
+    # Making fake birthdays
+    b_days = []
+    for _ in range(NUM_STUDENTS):
+        b_month = random.choice(list(MONTHS.keys()))
+        b_year = CUR_YEAR - int(random.gauss(21, 2))
+        b_days.append(str(random.randint(1, MONTHS[b_month])) + ' ' + b_month + ', ' + str(b_year))
+    
+    # Making fake GPAs
+    overall_gpas = [round(random.gauss(3.0, 0.4), 2) for _ in range(NUM_STUDENTS)]
+    major_gpas = [round(gpa + random.gauss(-0.2, 0.1), 2) for gpa in overall_gpas]
+
+    # Making academic standing
+    standings = []
+    for i in range(NUM_STUDENTS):
+        if random.randint(1, 100) <= 8:
+            standings.append("Financial Hold")
+        elif overall_gpas[i] < 2.5:
+            standings.append("Academic Probation")
+        elif major_gpas[i] < 2.5:
+            standings.append("Insuff. Major GPA")
+        else:
+            standings.append("Good Standing")
+    print(standings)
+
+
+
 
 
 
