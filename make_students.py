@@ -4,6 +4,7 @@
 
 import pandas as pd
 import random
+from numpy import count_nonzero, mean
 
 NUM_STUDENTS = 50000
 WITH_NOISE = True
@@ -51,7 +52,7 @@ if __name__ == '__main__':
         b_days.append(str(random.randint(1, MONTHS[b_month])) + ' ' + b_month + ', ' + str(b_year))
     
     # Making fake GPAs
-    overall_gpas = [round(random.gauss(3.0, 0.4), 2) for _ in range(NUM_STUDENTS)]
+    overall_gpas = [round(random.gauss(3.1, 0.3), 2) for _ in range(NUM_STUDENTS)]
     major_gpas = [round(gpa + random.gauss(-0.2, 0.1), 2) for gpa in overall_gpas]
 
     # Making majors
@@ -78,9 +79,10 @@ if __name__ == '__main__':
         elif overall_gpas[i] < 2.5:
             standings.append("Academic Probation")
         elif major_gpas[i] < 2.5:
-            standings.append("Insuff. Major GPA")
+            standings.append("Academic Warning")
         else:
             standings.append("Good Standing")
+    
 
     # Making club lists
     clubs = []
@@ -94,6 +96,29 @@ if __name__ == '__main__':
         else:
             clubs.append(random.sample(CLUBS, random.randint(0,1)))
     
+    # Adding Noise
+    if WITH_NOISE:
+        for i in [random.randint(0, NUM_STUDENTS-1) for _ in range(NUM_STUDENTS//5000)]:
+            b_days[i] = "01 Jan, 1900"
+
+        for i in [random.randint(0, NUM_STUDENTS-1) for _ in range(NUM_STUDENTS//5000)]:
+            major_gpas[i] *= 10
+            standings[i] = "UNK."
+
+        for i in [random.randint(0, NUM_STUDENTS-1) for _ in range(NUM_STUDENTS//5000)]:
+            club = random.choice(CLUBS)
+            clubs[i] = [club for __ in range(5)]
+
+    print(f"Number of students in good standing: {standings.count('Good Standing')}")
+    print(f"Number of students in fin hold: {standings.count('Financial Hold')}")
+    print(f"Number of students in ac prob: {standings.count('Academic Probation')}")
+    print(f"Number of students in ac warning: {standings.count('Academic Warning')}")
+    print(f"Number of students in UNK: {standings.count('UNK.')}")
+    print(f"Mean overall gpa: {mean(overall_gpas)}")
+    print(f"Mean major gpa: {mean(major_gpas)}")
+    print(f"Max overall gpa: {max(overall_gpas)}")
+    print(f"Max major gpa: {max(major_gpas)}")
+    
     table = pd.DataFrame.from_dict({
         "Name": names,
         "Date of Birth": b_days,
@@ -105,7 +130,7 @@ if __name__ == '__main__':
         "Club Participation": clubs
     })
 
-    print(table.head(5))
+    print(table.head(10))
     table.to_json("Example-Dataset-Generators/Student Database.json")
 
 
