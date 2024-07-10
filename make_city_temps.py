@@ -40,11 +40,6 @@ CITY_LAT_LONG = {
     "Nairobi" : ('1.3S', '36.8E')
 }
 
-HEMI = {
-    "North" : ["Hong Kong", "Seattle", "Frankfurt", "Ottawa"],
-    "South" : ["Sydney", "Buenos Aires", "Nairobi"]
-}
-
 AVG_DAY = {
     "00:00" : 3.0, "01:00" : 2.0, "02:00" : 1.5, "03:00" : 1.0,
     "04:00" : 0.5, "05:00" : 0.5, "06:00" : 0.0, "07:00" : 0.0,
@@ -73,6 +68,11 @@ MONTHS = {'Jan':31, 'Feb':28, 'Mar':31,
           'Jul':31, 'Aug':31, 'Sep':30,
           'Oct':31, 'Nov':30, 'Dec':31}
 
+def get_ordered_sample(l: list, n=1) -> list:
+    idxs = random.sample(list(range(len(l))), n)
+    idxs.sort()
+    return [l[i] for i in idxs]
+
 if __name__ == '__main__':
     cities = []
     dates = []
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     longs = []
     mean_temp = START_MEAN_TEMP
     for year in range(START_YEAR, FINAL_YEAR+1):
-        for month in random.sample(list(MONTHS.keys()), random.randint(4, 12)):
-            for day in random.sample(list(range(1, 29)), random.randint(2, 21)):
+        for month in get_ordered_sample(list(MONTHS.keys()), random.randint(4, 12)):
+            for day in get_ordered_sample(list(range(1, MONTHS[month]+1)), random.randint(2, 21)):
                 city = random.choice(list(CITY_MEAN_TEMP_OFFSET.keys()))
                 date = str(year) + '-' + month + '-' + str(day)
                 temp = AVG_DAY.copy()
@@ -101,9 +101,10 @@ if __name__ == '__main__':
                     temp[hour] += mean_temp
                     temp[hour] += s_o
                     temp[hour] += random.gauss(0,1)
+                    temp[hour] = round(temp[hour], 3)
                 cities.append(city)
                 dates.append(date)
-                temps.append(temps)
+                temps.append(temp)
                 lats.append(CITY_LAT_LONG[city][0])
                 longs.append(CITY_LAT_LONG[city][1])
         mean_temp += random.gauss(0.5, 0.2)
@@ -115,7 +116,10 @@ if __name__ == '__main__':
         'City': cities,
         'Latitude' : lats,
         'Longitude' : longs,
-        #'Recorded Hourly Temperatures' : temps
+        'Measured Temperatures' : temps
     })
     print(table.head(10))
+
+    table.to_json("City_Temperatures.json")
+    table.to_excel("City_Temperatures.xlsx")
                     
