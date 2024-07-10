@@ -7,6 +7,7 @@ import random
 from numpy import count_nonzero, mean
 
 NUM_STUDENTS = 50000
+NUM_ADVISORS = 4
 WITH_NOISE = True
 MONTHS = {'Jan':31, 'Feb':28, 'Mar':31, 
           'Apr':30, 'May':31, 'Jun':30, 
@@ -34,6 +35,10 @@ with open("Example-Dataset-Generators/first_names.txt") as f:
 
 with open("Example-Dataset-Generators/last_names.txt") as f:
     LAST_NAMES = f.readlines()
+
+ADVISORS = []
+for _ in range(NUM_ADVISORS):
+    ADVISORS.append(random.choice(FIRST_NAMES).strip() + ' ' + random.choice(LAST_NAMES).strip())
 
 if __name__ == '__main__':
     print(f"Generating a dataset of {NUM_STUDENTS} random students")
@@ -70,6 +75,11 @@ if __name__ == '__main__':
         if minor != "None":
             overall_gpas[i] -= 0.1
             major_gpas[i] -= 0.2
+
+    # Making advisors
+    advisors = []
+    for major in majors:
+        advisors.append(ADVISORS[int(MAJORS.index(major) / len(MAJORS) * NUM_ADVISORS)])
 
     # Making academic standing
     standings = []
@@ -109,6 +119,9 @@ if __name__ == '__main__':
             club = random.choice(CLUBS)
             clubs[i] = [club for __ in range(5)]
 
+        for i in [random.randint(0, NUM_STUDENTS-1) for _ in range(NUM_STUDENTS//5000)]:
+            advisors[i] = advisors[i].upper()
+
     print(f"Number of students in good standing: {standings.count('Good Standing')}")
     print(f"Number of students in fin hold: {standings.count('Financial Hold')}")
     print(f"Number of students in ac prob: {standings.count('Academic Probation')}")
@@ -124,6 +137,7 @@ if __name__ == '__main__':
         "Date of Birth": b_days,
         "Major": majors,
         "Minor": minors,
+        "Advisor" : advisors,
         "Overall GPA": overall_gpas,
         "Major Specific GPA": major_gpas,
         "Academic Standing": standings,
@@ -132,11 +146,3 @@ if __name__ == '__main__':
 
     print(table.head(10))
     table.to_json("Example-Dataset-Generators/Student Database.json")
-
-
-
-
-
-
-
-        
