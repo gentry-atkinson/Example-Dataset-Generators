@@ -6,9 +6,9 @@ import random
 import pandas as pd
 import numpy as np
 
-START_YEAR = 2010
+START_YEAR = 2000
 FINAL_YEAR = 2023
-START_MEAN_TEMP = 21
+START_MEAN_TEMP = 19
 
 CITY_MEAN_TEMP_OFFSET = {
     "Sydney" : 0.5,
@@ -107,7 +107,8 @@ if __name__ == '__main__':
                 temps.append(temp)
                 lats.append(CITY_LAT_LONG[city][0])
                 longs.append(CITY_LAT_LONG[city][1])
-        mean_temp += random.gauss(0.5, 0.2)
+        # TREND - mean temp increases slightly every year
+        mean_temp += random.gauss(0.1, 0.1)
         print(f'Completed {year}')
     print('All temps generated')
     
@@ -119,6 +120,7 @@ if __name__ == '__main__':
         'Measured Temperatures' : temps
     })
     print(table.head(10))
+    print(f"Total number of rows: {len(table)}")
 
     table.to_json("City_Temperatures.json")
     table.to_excel("City_Temperatures.xlsx")
