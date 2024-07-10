@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 
 START_YEAR = 2000
 FINAL_YEAR = 2023
+WITH_NOISE = True
 START_MEAN_TEMP = 19
 
 CITY_MEAN_TEMP_OFFSET = {
@@ -122,6 +123,36 @@ if __name__ == '__main__':
         mean_temp += random.gauss(0.1, 0.1)
         print(f'Completed {year}')
     print('All temps generated')
+
+    if WITH_NOISE:
+        # NUISANCE- some lats and longs have time values
+        for i in random.sample(range(0, len(cities)), len(cities)//100):
+            lats[i] = '00:00'
+            longs[i] = '00:00'
+
+        # NUISANCE- some cities in all caps with truncated names
+        for i in random.sample(range(0, len(cities)), len(cities)//100):
+            cities[i] = cities[i].upper()[:-1*random.randint(1, 3)]
+
+        # NUISANCE- some dates are in a different format
+        for i in random.sample(range(0, len(cities)), len(cities)//100):
+            year, month, day = dates[i].split('-')
+            dates[i] = str(day) + '/' + month + '/' + str(year)
+
+        # NOISE- some days have been entered in farenheit
+        for i in random.sample(range(0, len(cities)), len(cities)//100):
+            for time in AVG_DAY:
+                temps[i][time] = temps[i][time]*1.8 + 32
+        
+        # NOISE- some NaN values have been entered as temps
+        for i in random.sample(range(0, len(cities)), len(cities)//100):
+            time = random.choice(list(AVG_DAY.keys()))
+            temps[i][time] = float('nan')
+
+        # NOISE- some days are missing temperature values after noon
+        for i in random.sample(range(0, len(cities)), len(cities)//100):
+            temps[i] = {time:temps[i][time] for time in list(AVG_DAY.keys())[0:12]}
+
     
     table = pd.DataFrame.from_dict({
         'Date' : dates,
@@ -136,12 +167,13 @@ if __name__ == '__main__':
     table.to_json("City_Temperatures.json")
     table.to_excel("City_Temperatures.xlsx")
 
-    plt.figure()
-    for idx in table.index:
-        plt.scatter(
-            max(temps[idx].values()), 
-            min(temps[idx].values()),
-            c=CITY_COLORS[cities[idx]]
-        )
-    plt.savefig('max_and_min_temps.png')
-                    
+    # plt.figure()
+    # for idx in table.index:
+    #     plt.scatter(
+    #         max(temps[idx].values()), 
+    #         min(temps[idx].values()),
+    #         c=CITY_COLORS[cities[idx]],
+    #         #label=cities[idx]
+    #     )
+    # #plt.legend()
+    # plt.savefig('max_and_min_temps.png')
