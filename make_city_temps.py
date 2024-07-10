@@ -4,6 +4,7 @@
 
 import random
 import pandas as pd
+import numpy as np
 
 START_YEAR = 2010
 FINAL_YEAR = 2023
@@ -29,6 +30,16 @@ CITY_TEMP_SWING = {
     "Nairobi" : 1.4
 }
 
+CITY_LAT_LONG = {
+    "Sydney" : ('33.9S', '151.2E'),
+    "Hong Kong" : ('22.3N', '114.2E'),
+    "Seattle" : ('47.6N', '112.3W'),
+    "Frankfurt" : ('50.1N', '8.9E'),
+    "Ottawa" : ('45.4N', '75.7W'),
+    "Buenos Aires" : ('34.6S', '53.4W'),
+    "Nairobi" : ('1.3S', '36.8E')
+}
+
 HEMI = {
     "North" : ["Hong Kong", "Seattle", "Frankfurt", "Ottawa"],
     "South" : ["Sydney", "Buenos Aires", "Nairobi"]
@@ -50,6 +61,13 @@ SEASON_OFFSET = {
     "Winter" : -2.0 
 }
 
+SEASON_MONTHS = {
+    "Spring" : ['Mar', 'Apr', 'May'],
+    "Summer" : ['Jun', 'Jul', 'Aug'],
+    "Fall" : ['Sep', 'Oct', 'Nov'],
+    "Winter" : ['Dec', 'Jan', 'Feb'] 
+}
+
 MONTHS = {'Jan':31, 'Feb':28, 'Mar':31, 
           'Apr':30, 'May':31, 'Jun':30, 
           'Jul':31, 'Aug':31, 'Sep':30,
@@ -59,10 +77,45 @@ if __name__ == '__main__':
     cities = []
     dates = []
     temps = []
+    lats = []
+    longs = []
     mean_temp = START_MEAN_TEMP
     for year in range(START_YEAR, FINAL_YEAR+1):
         for month in random.sample(list(MONTHS.keys()), random.randint(4, 12)):
             for day in random.sample(list(range(1, 29)), random.randint(2, 21)):
                 city = random.choice(list(CITY_MEAN_TEMP_OFFSET.keys()))
                 date = str(year) + '-' + month + '-' + str(day)
-                print(city, date)
+                temp = AVG_DAY.copy()
+                day_offset = random.gauss(0,1)
+                hem = 'North' if 'N' in CITY_LAT_LONG[city][0] else 'South'
+                for s, m in SEASON_MONTHS.items():
+                    if month in m:
+                        season = s
+                        break
+                s_o = SEASON_OFFSET[season]
+                s_o *= CITY_TEMP_SWING[city]
+                if hem == 'South':
+                    s_o *= -1.0
+                for hour in temp:
+                    temp[hour] *= CITY_TEMP_SWING[city]
+                    temp[hour] += mean_temp
+                    temp[hour] += s_o
+                    temp[hour] += random.gauss(0,1)
+                cities.append(city)
+                dates.append(date)
+                temps.append(temps)
+                lats.append(CITY_LAT_LONG[city][0])
+                longs.append(CITY_LAT_LONG[city][1])
+        mean_temp += random.gauss(0.5, 0.2)
+        print(f'Completed {year}')
+    print('All temps generated')
+    
+    table = pd.DataFrame.from_dict({
+        'Date' : dates,
+        'City': cities,
+        'Latitude' : lats,
+        'Longitude' : longs,
+        #'Recorded Hourly Temperatures' : temps
+    })
+    print(table.head(10))
+                    
