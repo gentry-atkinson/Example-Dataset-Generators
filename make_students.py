@@ -32,10 +32,10 @@ MAJORS = ["Accounting", "Mathematics", "Acting", "Nursing", "Finance",
           "Psychology", "History", "Spanish", "Social Work", "Digital Media",
           "Theater Arts", "Kinesiology", "Marketing", "Video Game Dev."]
 
-with open("Example-Dataset-Generators/first_names.txt") as f:
+with open("first_names.txt") as f:
     FIRST_NAMES = f.readlines()
 
-with open("Example-Dataset-Generators/last_names.txt") as f:
+with open("last_names.txt") as f:
     LAST_NAMES = f.readlines()
 
 ADVISORS = []
@@ -177,4 +177,4 @@ if __name__ == '__main__':
     })
 
     print(table[['Name', 'Overall GPA', 'Major-Specific GPA', 'Date of Birth']].head(10))
-    table.to_json("Example-Dataset-Generators/Student Database.json")
+    table.to_json("Student Database.json")
