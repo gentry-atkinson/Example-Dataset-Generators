@@ -178,3 +178,4 @@ if __name__ == '__main__':
 
     print(table[['Name', 'Overall GPA', 'Major-Specific GPA', 'Date of Birth']].head(10))
     table.to_json("Student Database.json")
+    table.to_excel("Student Database.xlsx")

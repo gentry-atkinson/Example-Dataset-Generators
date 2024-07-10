@@ -57,8 +57,12 @@ MONTHS = {'Jan':31, 'Feb':28, 'Mar':31,
 
 if __name__ == '__main__':
     cities = []
+    dates = []
     temps = []
+    mean_temp = START_MEAN_TEMP
     for year in range(START_YEAR, FINAL_YEAR+1):
         for month in random.sample(list(MONTHS.keys()), random.randint(4, 12)):
             for day in random.sample(list(range(1, 29)), random.randint(2, 21)):
-                pass
+                city = random.choice(list(CITY_MEAN_TEMP_OFFSET.keys()))
+                date = str(year) + '-' + month + '-' + str(day)
+                print(city, date)

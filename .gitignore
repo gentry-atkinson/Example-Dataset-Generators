@@ -1,6 +1,8 @@
 # Throwing in my own so that the datasets themselves don't get commited
 *.csv
 *.json
+*.xlsx
+*.~lock.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
