@@ -3,6 +3,7 @@
 *.json
 *.xlsx
 *.~lock.*
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

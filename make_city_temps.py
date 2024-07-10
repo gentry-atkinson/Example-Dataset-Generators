@@ -5,6 +5,7 @@
 import random
 import pandas as pd
 import numpy as np
+from matplotlib import pyplot as plt
 
 START_YEAR = 2000
 FINAL_YEAR = 2023
@@ -38,6 +39,16 @@ CITY_LAT_LONG = {
     "Ottawa" : ('45.4N', '75.7W'),
     "Buenos Aires" : ('34.6S', '53.4W'),
     "Nairobi" : ('1.3S', '36.8E')
+}
+
+CITY_COLORS = {
+    "Sydney" : 'red',
+    "Hong Kong" : 'orange',
+    "Seattle" : 'blue',
+    "Frankfurt" : 'green',
+    "Ottawa" : 'black',
+    "Buenos Aires" : 'purple',
+    "Nairobi" : 'yellow'
 }
 
 AVG_DAY = {
@@ -124,4 +135,13 @@ if __name__ == '__main__':
 
     table.to_json("City_Temperatures.json")
     table.to_excel("City_Temperatures.xlsx")
+
+    plt.figure()
+    for idx in table.index:
+        plt.scatter(
+            max(temps[idx].values()), 
+            min(temps[idx].values()),
+            c=CITY_COLORS[cities[idx]]
+        )
+    plt.savefig('max_and_min_temps.png')
                     
