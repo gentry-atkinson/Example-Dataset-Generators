@@ -39,7 +39,7 @@ RESALERS_W_SCALE = {
 }
 
 CONDS_W_SCALE = {
-    'Poor' : 0.6, 'Fair' : 0.8, 'Normal' : 1.0, 'Good' : 1.1, 'Great' : 1.2
+    'Poor' : 0.6, 'Fair' : 0.8, 'Normal' : 0.9, 'Good' : 1.0, 'Great' : 1.05
 }
 
 class Product:
@@ -65,8 +65,8 @@ def make_product_list(man: str, n: int) -> list[Product]:
         l.append(Product(cat, msrp, name))
     return l
 
-SELLER_IDS_W_SCALE = {i : random.gauss(1, 0.1) for i in range(NUM_SELLERS)}
-BUYER_IDS_W_SCALE = {i : random.gauss(1, 0.1) for i in range(NUM_BUYERS)}
+SELLER_IDS_W_SCALE = {i : random.gauss(1.1, 0.1) for i in range(NUM_SELLERS)}
+BUYER_IDS_W_SCALE = {i : random.gauss(0.9, 0.1) for i in range(NUM_BUYERS)}
 
 if __name__ == '__main__':
     year = START_YEAR
@@ -93,8 +93,13 @@ if __name__ == '__main__':
     print(f"Number of manufacturers: {len(prod_lists)}")
     print(f"Total number of products: {sum([len(l) for l in prod_lists.values()])}")
 
+    # TREND- some years have higher prices than others
+    year_scale = random.gauss(1, 0.05)
+
+    # TREND- prices increase over time
+    inflation = 1.0
+
     while year <= FINAL_YEAR:
-        year_scale = random.gauss(1, 0.05)
         month = list(MONTHS.keys())[mon_idx]
         for _ in range(random.randint(5, 20)):
             # Choose all factors
@@ -107,12 +112,13 @@ if __name__ == '__main__':
             age = random.randint(0, 10)
 
             #Calculate sale price
-            price = random.gauss(prod.msrp, prod.msrp//20)
+            price = random.gauss(prod.msrp, prod.msrp/20)
             price *= SELLER_IDS_W_SCALE[s_id]
             price *= BUYER_IDS_W_SCALE[b_id]
             price *= CONDS_W_SCALE[cond]
             price *= RESALERS_W_SCALE[resaler]
             price *= year_scale
+            price *= inflation
             price *= (1-LOSS_PER_YEAR)**age
 
             #Add values to column lists
@@ -120,7 +126,7 @@ if __name__ == '__main__':
             prod_codes.append(prod.product_code)
             cats.append(prod.category)
             year_prod.append(year - age)
-            msrps.append('$' + str(prod.msrp))
+            msrps.append('$' + str(int(prod.msrp * inflation)))
             mans.append(man)
             sale_prices.append(round(price, 2))
             s_ids.append(s_id)
@@ -137,6 +143,9 @@ if __name__ == '__main__':
         if mon_idx == 12:
             mon_idx = 0
             year += 1
+            year_scale = random.gauss(1, 0.05)
+            inflation = (1.0 + (LOSS_PER_YEAR/2)) ** (year - START_YEAR)
+
     tids = [i for i in range(1, len(prod_names)+1)]
     print(f"{len(prod_names)} transactions generated")
 
