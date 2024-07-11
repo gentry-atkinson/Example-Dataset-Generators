@@ -15,21 +15,21 @@ START_MEAN_TEMP = 19
 CITY_MEAN_TEMP_OFFSET = {
     "Sydney" : 0.5,
     "Hong Kong" : 7.0,
-    "Seattle" : 0.0,
+    "Seattle" : -2.0,
     "Frankfurt" : -10.0,
     "Ottawa" : -3.0,
     "Buenos Aires" : -2.5,
-    "Nairobi" : -0.6
+    "Nairobi" : 3.0
 }
 
 CITY_TEMP_SWING = {
     "Sydney" : 1.2,
     "Hong Kong" : 1.3,
     "Seattle" : 0.5,
-    "Frankfurt" : 0.2,
-    "Ottawa" : 1.1,
-    "Buenos Aires" : 1.8,
-    "Nairobi" : 1.4
+    "Frankfurt" : 0.4,
+    "Ottawa" : 1.4,
+    "Buenos Aires" : 1.5,
+    "Nairobi" : 0.8
 }
 
 CITY_LAT_LONG = {
@@ -52,6 +52,17 @@ CITY_COLORS = {
     "Nairobi" : 'yellow'
 }
 
+# Annual rainy days
+CITY_PRECIP = {
+    "Sydney" : 60,
+    "Hong Kong" : 136,
+    "Seattle" : 165,
+    "Frankfurt" : 108,
+    "Ottawa" : 67,
+    "Buenos Aires" : 102,
+    "Nairobi" : 50
+}
+
 AVG_DAY = {
     "00:00" : 3.0, "01:00" : 2.0, "02:00" : 1.5, "03:00" : 1.0,
     "04:00" : 0.5, "05:00" : 0.5, "06:00" : 0.0, "07:00" : 0.0,
@@ -63,9 +74,9 @@ AVG_DAY = {
 
 SEASON_OFFSET = {
     "Spring" : 0.0,
-    "Summer" : 2.0,
-    "Fall" : -0.5,
-    "Winter" : -2.0 
+    "Summer" : 10.0,
+    "Fall" : -2.5,
+    "Winter" : -12.0 
 }
 
 SEASON_MONTHS = {
@@ -91,34 +102,57 @@ if __name__ == '__main__':
     temps = []
     lats = []
     longs = []
+    precips = []
     mean_temp = START_MEAN_TEMP
     for year in range(START_YEAR, FINAL_YEAR+1):
-        for month in get_ordered_sample(list(MONTHS.keys()), random.randint(4, 12)):
-            for day in get_ordered_sample(list(range(1, MONTHS[month]+1)), random.randint(2, 21)):
+        for month in get_ordered_sample(list(MONTHS.keys()), random.randint(6, 12)):
+            for day in get_ordered_sample(list(range(1, MONTHS[month]+1)), random.randint(10, 21)):
                 city = random.choice(list(CITY_MEAN_TEMP_OFFSET.keys()))
                 date = str(year) + '-' + month + '-' + str(day)
                 temp = AVG_DAY.copy()
+
+                # Small constant shift for the day
                 day_offset = random.gauss(0,1)
-                hem = 'North' if 'N' in CITY_LAT_LONG[city][0] else 'South'
+
+                # Determine if the day is raining
+                if random.randint(1, 365) >= CITY_PRECIP[city]:
+                    precip = "None"
+                else:
+                    precip = round(random.gauss(4*CITY_PRECIP[city]/365, 0.1), 2)
+
+                # Determine the season of the month
                 for s, m in SEASON_MONTHS.items():
                     if month in m:
                         season = s
                         break
-                s_o = SEASON_OFFSET[season]
+
+                # Get a slightly randomized shift to reflect the season
+                s_o = random.gauss(SEASON_OFFSET[season], 2)
                 s_o *= CITY_TEMP_SWING[city]
-                if hem == 'South':
+                if 'N' in CITY_LAT_LONG[city][0]:
                     s_o *= -1.0
+
+                # Iterate over hours in day, adding shifts to the AVG_DAY
                 for hour in temp:
                     temp[hour] *= CITY_TEMP_SWING[city]
                     temp[hour] += mean_temp
+                    temp[hour] += CITY_MEAN_TEMP_OFFSET[city]
                     temp[hour] += s_o
-                    temp[hour] += random.gauss(0,1)
+                    temp[hour] += day_offset
+                    temp[hour] += random.gauss(0,1) # hour offset
+                    # TREND- rainy days are slighty cooler
+                    if precip != 'None':
+                        temp[hour] -= random.gauss(2, 0.5)
                     temp[hour] = round(temp[hour], 3)
+
+                # Add all values to columns lists
                 cities.append(city)
                 dates.append(date)
                 temps.append(temp)
                 lats.append(CITY_LAT_LONG[city][0])
                 longs.append(CITY_LAT_LONG[city][1])
+                precips.append(precip)
+
         # TREND - mean temp increases slightly every year
         mean_temp += random.gauss(0.1, 0.1)
         print(f'Completed {year}')
@@ -159,7 +193,8 @@ if __name__ == '__main__':
         'City': cities,
         'Latitude' : lats,
         'Longitude' : longs,
-        'Measured Temperatures' : temps
+        'Measured Temperatures (Celsius)' : temps,
+        'Rainfall (cm)' : precips
     })
     print(table.head(10))
     print(f"Total number of rows: {len(table)}")
@@ -167,13 +202,21 @@ if __name__ == '__main__':
     table.to_json("City_Temperatures.json")
     table.to_excel("City_Temperatures.xlsx")
 
-    # plt.figure()
-    # for idx in table.index:
-    #     plt.scatter(
-    #         max(temps[idx].values()), 
-    #         min(temps[idx].values()),
-    #         c=CITY_COLORS[cities[idx]],
-    #         #label=cities[idx]
-    #     )
-    # #plt.legend()
-    # plt.savefig('max_and_min_temps.png')
+    if not WITH_NOISE:
+        plt.figure()
+        for idx in table.index:
+            plt.scatter(
+                max(temps[idx].values()), 
+                min(temps[idx].values()),
+                c=CITY_COLORS[cities[idx]],
+            )
+        plt.title("All measured max and min temps")
+        plt.savefig('max_and_min_temps.png')
+
+        plt.figure()
+        idx = random.randint(0, len(cities)-1)
+        plt.plot(temps[idx].keys(), temps[idx].values())
+        plt.title(f"{dates[idx]} in {cities[idx]}")
+        plt.savefig('one day of weather.png')
+
+        
