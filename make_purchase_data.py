@@ -171,7 +171,11 @@ if __name__ == '__main__':
         for i in range(start, start+length):
             d, m, y = dates[i].split(' ')
             dates[i] = f"{y}-{m[:-1]}-{d}"
-            #print(dates[i])
+            print(dates[i])
+
+        # NOISE- some transaction ids have been lost
+        for i in random.sample(range(0, len(prod_names)), len(prod_names)//100):
+            t_ids[i] = float('nan')
 
 
     #Make DataFrame with columns and write to file
