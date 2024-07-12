@@ -126,7 +126,7 @@ if __name__ == '__main__':
             prod_codes.append(prod.product_code)
             cats.append(prod.category)
             year_prod.append(year - age)
-            msrps.append('$' + str(int(prod.msrp * inflation)))
+            msrps.append(f"${prod.msrp * inflation:.0f}")
             mans.append(man)
             sale_prices.append(round(price, 2))
             s_ids.append(s_id)
