@@ -146,8 +146,33 @@ if __name__ == '__main__':
             year_scale = random.gauss(1, 0.05)
             inflation = (1.0 + (LOSS_PER_YEAR/2)) ** (year - START_YEAR)
 
-    tids = [i for i in range(1, len(prod_names)+1)]
+    t_ids = [i for i in range(1, len(prod_names)+1)]
     print(f"{len(prod_names)} transactions generated")
+
+    # Add Noise
+    if WITH_NOISE:
+        # NOISE- some sale prices mis-recorded with bad value for condition
+        for i in random.sample(range(0, len(prod_names)), len(prod_names)//100):
+            conds[i] = '***UNK***'
+            sale_prices[i] *= 10
+
+        # NUISANCE- some msrps have excesive decimals
+        for i in random.sample(range(0, len(prod_names)), len(prod_names)//100):
+            msrps[i] += ".00000000000"
+
+        # NOISE- values swapped in some rows
+        for i in random.sample(range(0, len(prod_names)), len(prod_names)//100):
+            s_ids[i], b_ids[i] = (b_ids[i], s_ids[i])
+            mans[i], prod_names[i] = (prod_names[i], mans[i])
+
+        # NUISANCE- date formats changed over a range of rows
+        length = random.randint(50, 200)
+        start = random.randint(0, len(prod_names)-length)
+        for i in range(start, start+length):
+            d, m, y = dates[i].split(' ')
+            dates[i] = f"{y}-{m[:-1]}-{d}"
+            #print(dates[i])
+
 
     #Make DataFrame with columns and write to file
     table = pd.DataFrame.from_dict({
@@ -161,6 +186,7 @@ if __name__ == '__main__':
         'Condition of Product' : conds,
         'Transaction Date' : dates,
         'Transaction Platform' : resalers,
+        'Transaction IDs' : t_ids,
         'Product Code' : prod_codes,
         'Sale Price' : sale_prices
     })
