@@ -115,6 +115,24 @@ if __name__ == '__main__':
         else:
             clubs.append(random.sample(CLUBS, random.randint(0,1)))
 
+    # Making student IDs
+    stud_ids = []
+    for i, name in enumerate(names):
+        s_id = 'G'
+        s_id += str(random.randint(10, 99))
+        s_id += name[0].upper()
+        s_id += f"{ADVISORS.index(advisors[i]):02d}"
+        s_id += b_days[i][-4:]
+        s_id += f"{MAJORS.index(majors[i]):02d}"
+        assert len(s_id) == 12, "Bad len of student id"
+        stud_ids.append(s_id)
+
+    #Making Net IDs
+    net_ids = []
+    for name in names:
+        n_id = name[0:3]
+        n_id += name.split(',')
+
     # Sanity checking and rounding GPAs
     for i, gpa in enumerate(overall_gpas):
         if gpa > 4.0:
@@ -166,6 +184,7 @@ if __name__ == '__main__':
     # Convert to DF and write to JSON
     table = pd.DataFrame.from_dict({
         "Name": names,
+        "Student ID" : stud_ids,
         "Date of Birth": b_days,
         "Major": majors,
         "Minor": minors,
