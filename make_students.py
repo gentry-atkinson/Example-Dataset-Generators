@@ -10,7 +10,7 @@ from numpy import count_nonzero, mean
 
 NUM_STUDENTS = 50000
 NUM_ADVISORS = 7
-WITH_NOISE = True
+WITH_NOISE = False
 MONTHS = {'Jan':31, 'Feb':28, 'Mar':31, 
           'Apr':30, 'May':31, 'Jun':30, 
           'Jul':31, 'Aug':31, 'Sep':30,
@@ -64,8 +64,8 @@ if __name__ == '__main__':
 
         # TREND- older students have higher GPAs
         age = CUR_YEAR - b_year
-        overall_gpas[i] += random.gauss((age-18)*0.01, 0.1)
-        major_gpas[i] += random.gauss((age-18)*0.01, 0.1)
+        overall_gpas[i] += random.gauss((age-18)*0.05, 0.1)
+        major_gpas[i] += random.gauss((age-18)*0.05, 0.1)
 
     # Making majors
     majors = [random.choice(MAJORS) for _ in range(NUM_STUDENTS)]
@@ -128,10 +128,10 @@ if __name__ == '__main__':
         stud_ids.append(s_id)
 
     #Making Net IDs
-    net_ids = []
-    for name in names:
-        n_id = name[0:3]
-        n_id += name.split(',')
+    # net_ids = []
+    # for name in names:
+    #     n_id = name[0:3]
+    #     n_id += name.split(',')
 
     # Sanity checking and rounding GPAs
     for i, gpa in enumerate(overall_gpas):
