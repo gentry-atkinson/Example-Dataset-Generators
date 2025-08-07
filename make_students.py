@@ -6,16 +6,20 @@
 
 import pandas as pd
 import random
-from numpy import count_nonzero, mean
+import numpy as np
+import seaborn as sbn
+from matplotlib import pyplot as plt
+
+DEBUG = False
 
 NUM_STUDENTS = 50000
 NUM_ADVISORS = 7
-WITH_NOISE = False
+WITH_NOISE = True
 MONTHS = {'Jan':31, 'Feb':28, 'Mar':31, 
           'Apr':30, 'May':31, 'Jun':30, 
           'Jul':31, 'Aug':31, 'Sep':30,
           'Oct':31, 'Nov':30, 'Dec':31}
-CUR_YEAR = 2024
+CUR_YEAR = 2025
 CLUBS = ["Investment Club", "Accounting Club", "AI Club",
          "Alliance of Indigenous Scholars", "Alpha Psi Omega",
          "Ballet Folklorico", "Board Game Club", 
@@ -42,6 +46,26 @@ ADVISORS = []
 for _ in range(NUM_ADVISORS):
     ADVISORS.append(random.choice(FIRST_NAMES).strip() + ' ' + random.choice(LAST_NAMES).strip())
 
+def generate_skewed_integers_transform(size, power, min_val=0, max_val=100):
+    """
+    Generates skewed integers by transforming a uniform distribution.
+
+    Args:
+        size (int): The number of integers to generate.
+        power (float): The power to raise the uniform values to.
+                       >1 for left-skew, <1 (but >0) for right-skew.
+        min_val (int): The minimum value of the desired range.
+        max_val (int): The maximum value of the desired range.
+
+    Returns:
+        numpy.ndarray: An array of skewed integers.
+    """
+    uniform_data = np.random.rand(size)
+    transformed_data = uniform_data**power
+    scaled_data = min_val + transformed_data * (max_val - min_val)
+    integers = np.round(scaled_data).astype(int)
+    return integers
+
 if __name__ == '__main__':
     print(f"Generating a dataset of {NUM_STUDENTS} random students")
     print(f"Possible first names: {len(FIRST_NAMES)}\nPossible last names: {len(LAST_NAMES)}")
@@ -52,20 +76,21 @@ if __name__ == '__main__':
         names.append(random.choice(LAST_NAMES).strip() + ', ' + random.choice(FIRST_NAMES).strip())
     
     # Making fake GPAs
-    overall_gpas = [random.gauss(3.0, 0.4) for _ in range(NUM_STUDENTS)]
-    major_gpas = [gpa + random.gauss(-0.2, 0.1) for gpa in overall_gpas]
+    overall_gpas = [random.gauss(3.0, 0.2) for _ in range(NUM_STUDENTS)]
+    major_gpas = [gpa + random.gauss(-0.2, 0.075) for gpa in overall_gpas]
 
     # Making fake birthdays
+    ages = generate_skewed_integers_transform(NUM_STUDENTS, power=3.5, min_val=18, max_val=35)
     b_days = []
     for i in range(NUM_STUDENTS):
+        age = ages[i]
         b_month = random.choice(list(MONTHS.keys()))
-        b_year = CUR_YEAR - int(random.gauss(21, 2))
+        b_year = CUR_YEAR - age
         b_days.append(str(random.randint(1, MONTHS[b_month])) + ' ' + b_month + ', ' + str(b_year))
 
         # TREND- older students have higher GPAs
-        age = CUR_YEAR - b_year
-        overall_gpas[i] += random.gauss((age-18)*0.05, 0.1)
-        major_gpas[i] += random.gauss((age-18)*0.05, 0.1)
+        overall_gpas[i] += random.gauss((age-18)*0.1, 0.1)
+        major_gpas[i] += random.gauss((age-18)*0.1, 0.1)
 
     # Making majors
     majors = [random.choice(MAJORS) for _ in range(NUM_STUDENTS)]
@@ -81,8 +106,8 @@ if __name__ == '__main__':
     for i, minor in enumerate(minors):
         # TREND- GPAs are lower for students that have a minor
         if minor != "None":
-            overall_gpas[i] -= 0.1
-            major_gpas[i] -= 0.2
+            overall_gpas[i] -= 0.2
+            major_gpas[i] -= 0.3
 
     # Making advisors
     advisors = []
@@ -92,12 +117,12 @@ if __name__ == '__main__':
     # Making academic standing
     standings = []
     for i in range(NUM_STUDENTS):
-        if random.randint(1, 100) <= 8:
-            standings.append("Financial Hold")
-        elif overall_gpas[i] < 2.5:
+        if overall_gpas[i] < 2.5:
             standings.append("Academic Probation")
         elif major_gpas[i] < 2.5:
             standings.append("Academic Warning")
+        elif random.randint(1, 100) <= 8:
+            standings.append("Financial Hold")
         else:
             standings.append("Good Standing")
     
@@ -107,9 +132,9 @@ if __name__ == '__main__':
     for gpa in overall_gpas:
         # TREND- students with higher GPAs join more clubs
         if gpa > 3.8:
-            clubs.append(random.sample(CLUBS, random.randint(0,4)))
+            clubs.append(random.sample(CLUBS, random.randint(1,5)))
         elif gpa > 3.0:
-            clubs.append(random.sample(CLUBS, random.randint(0,3)))
+            clubs.append(random.sample(CLUBS, random.randint(1,3)))
         elif gpa > 2.5:
             clubs.append(random.sample(CLUBS, random.randint(0,2)))
         else:
@@ -118,7 +143,7 @@ if __name__ == '__main__':
     # Making student IDs
     stud_ids = []
     for i, name in enumerate(names):
-        s_id = 'G'
+        s_id = random.choice(['G', 'D', 'T'])
         s_id += str(random.randint(10, 99))
         s_id += name[0].upper()
         s_id += f"{ADVISORS.index(advisors[i]):02d}"
@@ -176,8 +201,8 @@ if __name__ == '__main__':
     print(f"Number of students in ac prob: {standings.count('Academic Probation')}")
     print(f"Number of students in ac warning: {standings.count('Academic Warning')}")
     print(f"Number of students in UNK: {standings.count('**ERROR**')}")
-    print(f"Mean overall gpa: {mean(overall_gpas)}")
-    print(f"Mean major gpa: {mean(major_gpas)}")
+    print(f"Mean overall gpa: {np.mean(overall_gpas)}")
+    print(f"Mean major gpa: {np.mean(major_gpas)}")
     print(f"Max overall gpa: {max(overall_gpas)}")
     print(f"Max major gpa: {max(major_gpas)}")
     
@@ -195,6 +220,15 @@ if __name__ == '__main__':
         "Club Participation": clubs
     })
 
+    if DEBUG:
+        table['Age'] = ages
+
     print(table[['Name', 'Overall GPA', 'Major-Specific GPA', 'Date of Birth']].head(10))
     table.to_json("Student Database.json")
     table.to_excel("Student Database.xlsx")
+
+    if DEBUG:
+        print('DEBUG- show age/gpa plot')
+        print(table['Age'].value_counts().sort_index())
+        sbn.scatterplot(data=table, x='Age', y='Overall GPA')
+        plt.show()
