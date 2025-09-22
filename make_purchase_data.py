@@ -94,7 +94,7 @@ if __name__ == '__main__':
     print(f"Total number of products: {sum([len(l) for l in prod_lists.values()])}")
 
     # TREND- some years have higher prices than others
-    year_scale = random.gauss(1, 0.05)
+    year_scale = random.gauss(1, 0.07)
 
     # TREND- prices increase over time
     inflation = 1.0
